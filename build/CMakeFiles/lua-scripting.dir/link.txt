@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/lua-scripting.dir/link.d "CMakeFiles/lua-scripting.dir/main.cpp.o" -o lua-scripting
