@@ -4,6 +4,9 @@
 #include <fstream>
 #include <thread>
 
+#include "Resources.hpp"
+
+extern Resources resources;
 
 void Network::_handle_connect(websocketpp::connection_hdl hdl)
 {
@@ -28,14 +31,15 @@ void Network::_handle_disconnect(websocketpp::connection_hdl hdl)
 
 Network::Network()
 {
+    std::cout << "Network initialized, listening on port " << PORT << std::endl;
     _ws.init_asio();
     //weird lambda syntax to bind member functions as handlers
     _ws.set_open_handler([this](websocketpp::connection_hdl hdl) { this->_handle_connect(hdl); });
     _ws.set_close_handler([this](websocketpp::connection_hdl hdl) { this->_handle_disconnect(hdl); });
     std::thread t1([this]() { this->listen_heartbeat(); });
     std::thread t2([this]() { this->heartbeat(); });
-    t1.join();
-    t2.join();
+    t1.detach();
+    t2.detach();
 
 }
 
@@ -111,8 +115,12 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
 
 // Communication management functions
 void Network::heartbeat(){
+
     while (true)
     {
+        resources.update();
+        std::cout<<"heartbeat thread started"<<std::endl;
+        std::cout<<"cpu: "<<resources.cpu_user<<std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         check_alive();
         send_heartbeat();
@@ -135,9 +143,9 @@ void Network::send_heartbeat() {
         unsigned short multicast_port = 5005;
 
         struct Message msg;
-        msg.cpu = 1;
+        msg.cpu = resources.cpu_user;
         msg.gpu = 0;
-        msg.ram = 30;
+        msg.ram = resources.used_mem;
         msg.group_id = 0;
         msg.port = 5005;
 

@@ -19,7 +19,6 @@ Resources::Resources(/* args */)
 Resources::~Resources()
 {
     sg_shutdown();
-
 }
 
 int Resources::update()
@@ -36,7 +35,6 @@ int Resources::update()
         std::cout << "Total: " << total_mem << " MB\n";
         std::cout << "Used : " << used_mem  << " MB\n";
         std::cout << "Free : " << free_mem  << " MB\n";
-        sg_free_mem_stats(mem);                    // <- important
     } else {
         std::cerr << "Failed to get memory stats.\n";
     }
@@ -52,7 +50,6 @@ int Resources::update()
         cpu_user   = cpu->user;
         cpu_system = cpu->kernel;
         cpu_idle   = cpu->idle;
-        sg_free_cpu_percents(cpu);                 // <- important
     } else {
         std::cerr << "Failed to get CPU stats, error code: " << cpu_error << std::endl;
     }

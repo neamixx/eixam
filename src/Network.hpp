@@ -1,3 +1,6 @@
+#ifndef NETWORK_HPP
+#define NETWORK_HPP
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -9,10 +12,12 @@
 
 #include <unordered_map>
 
-#ifndef NETWORK_HPP
-#define NETWORK_HPP
+#include "Resources.hpp"
+
+
 
 #define PORT 8044
+
 
 struct Message{
     float cpu;
@@ -32,7 +37,6 @@ struct InfoPeer{
 class Network
 {
 private:
-
     std::unordered_map<std::string, websocketpp::connection_hdl> _peersWS;
     websocketpp::server<websocketpp::config::asio> _ws;
     void _handle_connect(websocketpp::connection_hdl hdl);
