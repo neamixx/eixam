@@ -1,6 +1,8 @@
 #ifndef RESOURCES_HPP
 #define RESOURCES_HPP
 
+#include <string>
+
 class Resources
 {
 private:
@@ -13,6 +15,8 @@ public:
     float cpu_user;
     float cpu_system;
     float cpu_idle;
+
+    std::string hostname;
     
     Resources(/* args */);
     ~Resources();
