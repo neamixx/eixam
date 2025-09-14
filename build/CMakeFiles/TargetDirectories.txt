@@ -1,0 +1,3 @@
+/home/nuria/Desktop/hack-mit/eixam/repositori/eixam/build/CMakeFiles/MyLuaProject.dir
+/home/nuria/Desktop/hack-mit/eixam/repositori/eixam/build/CMakeFiles/edit_cache.dir
+/home/nuria/Desktop/hack-mit/eixam/repositori/eixam/build/CMakeFiles/rebuild_cache.dir

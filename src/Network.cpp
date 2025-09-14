@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <thread>
 
 void Network::_handle_connect(websocketpp::connection_hdl hdl)
 {
@@ -10,10 +11,14 @@ void Network::_handle_connect(websocketpp::connection_hdl hdl)
 
     std::cout << "Connection opened from IP: " << client_ip << std::endl;
 
+<<<<<<< Updated upstream
     std::string resource = con->get_resource();
 
     std::cout << "Incoming request for resource: " << resource << std::endl;
 
+=======
+    _peersWS[client_ip] = hdl;
+>>>>>>> Stashed changes
 }
 
 void Network::_handle_disconnect(websocketpp::connection_hdl hdl)
@@ -22,17 +27,33 @@ void Network::_handle_disconnect(websocketpp::connection_hdl hdl)
     std::string client_ip = con->get_remote_endpoint();
 
     std::cout << "Connection closed from IP: " << client_ip << std::endl;
+<<<<<<< Updated upstream
+=======
+
+    _peersWS.erase(client_ip);
+>>>>>>> Stashed changes
 }
 
 Network::Network()
 {
     _ws.init_asio();
+<<<<<<< Updated upstream
+=======
+    
+>>>>>>> Stashed changes
 
 
     //weird lambda syntax to bind member functions as handlers
     _ws.set_open_handler([this](websocketpp::connection_hdl hdl) { this->_handle_connect(hdl); });
     _ws.set_close_handler([this](websocketpp::connection_hdl hdl) { this->_handle_disconnect(hdl); });
 
+<<<<<<< Updated upstream
+=======
+    std::thread t1([this]() { this->listen_heartbeat(); });
+    std::thread t2([this]() { this->heartbeat(); });
+    t1.join();
+    t2.join();
+>>>>>>> Stashed changes
 
 }
 
@@ -59,6 +80,13 @@ void Network::listen()
 
 void Network::send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path)
 {
+<<<<<<< Updated upstream
+=======
+    if (_peersWS.find(ip_dest) == _peersWS.end()) {
+        std::cerr << "No connection found for IP: " << ip_dest << std::endl;
+        return;
+    }
+>>>>>>> Stashed changes
 
     std::vector<char> file_data = read_file(file_path);
     if (file_data.empty()) {
@@ -66,10 +94,19 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
         return;
     }
 
+<<<<<<< Updated upstream
     try
     {
         websocketpp::client<websocketpp::config::asio_client> c;
         c.init_asio();
+=======
+    websocketpp::connection_hdl hdl = _peersWS[ip_dest];
+    websocketpp::server<websocketpp::config::asio>::connection_ptr con = _ws.get_con_from_hdl(hdl);
+    if (!con) {
+        std::cerr << "Invalid connection handle for IP: " << ip_dest << std::endl;
+        return;
+    }
+>>>>>>> Stashed changes
 
         //log error channels
         c.clear_access_channels(websocketpp::log::alevel::all);
@@ -104,4 +141,101 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
     } catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << "\n";
     }
+}
+
+// Communication management functions
+
+void Network::heartbeat(){
+
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        check_alive();
+        send_heartbeat();
+    }
+    
+
+}
+
+
+void Network::send_heartbeat() {
+    using boost::asio::ip::udp;
+    try {
+        boost::asio::io_context io_context;
+        udp::socket socket(io_context);
+        socket.open(udp::v4());
+
+        // Set TTL for multicast (optional)
+        socket.set_option(boost::asio::ip::multicast::hops(1));
+
+        // Multicast address (all peers should listen on this)
+        std::string multicast_address = "239.255.0.1"; // example multicast IP
+        unsigned short multicast_port = 5005;
+
+        struct Message msg;
+        msg.cpu = 1;
+        msg.gpu = 0;
+        msg.ram = 30;
+        msg.group_id = 0;
+        msg.port = 5005;
+
+        udp::endpoint multicast_endpoint(boost::asio::ip::make_address(multicast_address), multicast_port);
+
+        // Send message
+        socket.send_to(boost::asio::buffer(&msg, sizeof(msg)), multicast_endpoint);
+
+        // Optional: print for debugging
+        std::cout << "Sent heartbeat to multicast group " 
+                  << multicast_address << ":" << multicast_port << std::endl;
+
+    } catch (std::exception& e) {
+        std::cerr << "Heartbeat send failed: " << e.what() << std::endl;
+    }
+}
+
+void Network::check_alive(){
+    const int TIMEOUT_MS = 60000; // 60 sec
+    auto now = std::chrono::high_resolution_clock::now();
+    int current_time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    for (auto it = _peers.begin(); it != _peers.end(); ) {
+        if (current_time - it->second > TIMEOUT_MS) {
+            std::cout << "Peer " << it->first << " is no longer alive." << std::endl;
+            it = _peers.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void Network::listen_heartbeat(){
+    using boost::asio::ip::udp;
+    boost::asio::io_context io_context;
+    udp::endpoint listener_endpoint(boost::asio::ip::make_address("239.255.0.1"), 5005);
+    udp::socket socket(io_context);
+    socket.open(listener_endpoint.protocol());
+    socket.set_option(boost::asio::socket_base::reuse_address(true));
+    socket.bind(listener_endpoint);
+
+    while(true) {
+        struct Message msg;
+        udp::endpoint sender_endpoint;
+        size_t length = socket.receive_from(boost::asio::buffer(&msg, sizeof(msg)), sender_endpoint);
+        std::cout << msg.cpu << " " << msg.gpu << " " << msg.ram << " " << msg.group_id << " " << msg.port << std::endl;
+        auto now = std::chrono::high_resolution_clock::now();
+        int timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+        add_peer(sender_endpoint.address().to_string(), timestamp);
+    }
+}
+
+
+void Network::add_peer(const std::string& ip, int timestamp){
+    //falta guardar missatge
+    if(_peers.find(ip) == _peers.end()){
+        _peers[ip] = timestamp;
+        std::cout << "Added new peer: " << ip << std::endl;
+    } else {
+        _peers[ip] = timestamp; //update ttl
+        std::cout << "Updated peer: " << ip << std::endl;
+    }
+
 }
