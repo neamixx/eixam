@@ -41,12 +41,8 @@ public:
     ~Network();
 
     std::vector<char> read_file(const std::string& path);
-<<<<<<< Updated upstream
     void send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path);
 
-=======
-    void send_file(const std::string& ip_dest, const std::string& file_path);
->>>>>>> Stashed changes
     void listen();
     void stop();
 
