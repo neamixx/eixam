@@ -20,6 +20,18 @@ std::string pick_machine() {
     auto it = peers.begin();
     std::advance(it, index);
 
+    if (it == peers.end()) {
+        throw std::runtime_error("No peers available");
+    }
+
+    if (resources.hostname.empty()) {
+        throw std::runtime_error("Hostname is empty");
+    }
+
+    if (it->second.last_msg.hostname == resources.hostname) {
+
+        return pick_machine();
+    }
     return it->first; // Return the IP address
 
 }
