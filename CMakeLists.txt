@@ -6,42 +6,35 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 
-# Find Lua (make sure it is installed)
+# Lua
 find_package(Lua REQUIRED)
 
-# Add WebSocket++ (header-only)
-add_subdirectory(${THIRD_PARTY_DIR}/websocketpp)
+# Boost (Asio via Boost.System)
+find_package(Boost REQUIRED COMPONENTS system)
+find_package(Threads REQUIRED)
 
-# Add ASIO as a proper target
-add_library(asio INTERFACE)
-target_include_directories(asio INTERFACE ${THIRD_PARTY_DIR}/asio/asio/include)
-target_compile_definitions(asio INTERFACE ASIO_STANDALONE)  # standalone mode
-
-# Collect source files
-file(GLOB SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-
-# Include directories
-set(INCLUDE_DIR 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/"
-    "${THIRD_PARTY_DIR}/websocketpp/"
+# WebSocket++ com a llibreria d'headers
+add_library(websocketpp INTERFACE)
+target_include_directories(websocketpp INTERFACE
+    "${THIRD_PARTY_DIR}/websocketpp"
 )
 
-# Add executable
-add_executable(MyLuaProject
-    ${SOURCE_DIR}
-    src/main.cpp
+# Fonts
+file(GLOB SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+# Executable
+add_executable(MyLuaProject ${SRC})
+
+# Includes del projecte i Lua
+target_include_directories(MyLuaProject PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    ${LUA_INCLUDE_DIR}
 )
 
-# Include directories
-target_include_directories(MyLuaProject PRIVATE 
-    ${LUA_INCLUDE_DIR} 
-    ${INCLUDE_DIR}
-)
-
-# Link libraries
-target_link_libraries(MyLuaProject PRIVATE 
-    ${LUA_LIBRARIES}   # Lua
-    websocketpp        # WebSocket++
-    asio               # ASIO (INTERFACE target)
-    pthread            
+# Enllaços (NO ASIO standalone, NO defines d'ASIO_STANDALONE)
+target_link_libraries(MyLuaProject PRIVATE
+    ${LUA_LIBRARIES}
+    Boost::system
+    Threads::Threads
+    websocketpp
 )
