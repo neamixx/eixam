@@ -19,6 +19,10 @@ target_include_directories(websocketpp INTERFACE
     "${THIRD_PARTY_DIR}/websocketpp"
 )
 
+add_subdirectory("${THIRD_PARTY_DIR}/json" json_build)
+
+add_subdirectory("${THIRD_PARTY_DIR}/cpp-httplib" httplib_build)
+
 # Fonts
 file(GLOB SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -37,4 +41,6 @@ target_link_libraries(MyLuaProject PRIVATE
     Boost::system
     Threads::Threads
     websocketpp
+    httplib::httplib
+    nlohmann_json::nlohmann_json
 )
