@@ -12,10 +12,15 @@
 #include <statgrab.h>
 #include "Server.hpp"
 
-extern Network network;
 
-int main() {
-    
+int main(int argc, char* argv[]) {
+    std::string name;
+    if (argc == 2) {
+        name = argv[1];
+    }
+
+
+    Network network(name);
     Server server;
     std::thread t1([&server]() { server.listen(); });
     t1.join();

@@ -1,15 +1,13 @@
 
 #include "Server.hpp"
-#include "Network.hpp"
 #include "Resources.hpp"
 
 extern Resources resources;
-extern Network network;
 
 Server::Server() {
     svr.Get("/hi", [&](const httplib::Request&, httplib::Response& res) {
     nlohmann::json peers_json;
-    for (const auto& [key, peer] : network._peers) {
+    for (const auto& [key, peer] : resources._peers) {
         peers_json[key] = {
             {"ttl", peer.ttl},
             {"last_msg", {

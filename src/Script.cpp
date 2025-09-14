@@ -87,7 +87,3 @@ int Script::action()
     return 0;
 }
 
-int Script::result()
-{
-    return 0;
-}

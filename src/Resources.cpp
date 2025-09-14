@@ -3,6 +3,8 @@
 #include <iostream>
 #include <unistd.h> //for gethostname
 
+
+
 Resources::Resources(/* args */)
 {
     sg_error init_err = sg_init(0);

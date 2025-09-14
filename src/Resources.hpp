@@ -2,12 +2,34 @@
 #define RESOURCES_HPP
 
 #include <string>
+#include <unordered_map>
+
+struct Message{
+    float cpu;
+    float totalcpu;
+    float totalram;
+    float gpu;
+    float ram;
+    float temp;
+    std::string hostname;
+    int group_id;
+    int port;
+};
+
+struct InfoPeer{
+    int ttl; //time to live
+    struct Message last_msg;
+};
+
+
 
 class Resources
 {
 private:
 
 public:
+    std::unordered_map<std::string, InfoPeer> _peers; //ip, InfoPeer
+
     int total_mem;
     int used_mem;
     int free_mem;

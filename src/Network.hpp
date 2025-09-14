@@ -13,22 +13,6 @@
 
 #define PORT 8044
 
-struct Message{
-    float cpu;
-    float totalcpu;
-    float totalram;
-    float gpu;
-    float ram;
-    float temp;
-    std::string hostname;
-    int group_id;
-    int port;
-};
-
-struct InfoPeer{
-    int ttl; //time to live
-    struct Message last_msg;
-};
 
 class Network
 {
@@ -38,10 +22,11 @@ private:
     websocketpp::server<websocketpp::config::asio> _ws;
     void _handle_connect(websocketpp::connection_hdl hdl);
     void _handle_disconnect(websocketpp::connection_hdl hdl);
+    std::string name;
+    
 public:
-    Network(/* args */);
+    Network(std::string name="node");
     ~Network();
-    std::unordered_map<std::string, InfoPeer> _peers; //ip, InfoPeer
     std::vector<char> read_file(const std::string& path);
     void send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path);
     void listen();
@@ -54,9 +39,6 @@ public:
     void listen_heartbeat();
     void send_heartbeat();
 
-    Network(const Network& other) {
-        _peers = other._peers;
-    }
 };
 
 #endif // NETWORK_HPP
