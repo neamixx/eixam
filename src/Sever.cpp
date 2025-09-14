@@ -16,7 +16,6 @@ Server::Server() {
                 {"totalram", peer.last_msg.totalram},
                 {"gpu", peer.last_msg.gpu},
                 {"ram", peer.last_msg.ram},
-                {"temp", peer.last_msg.temp},
                 {"hostname", peer.last_msg.hostname},
                 {"group_id", peer.last_msg.group_id},
                 {"port", peer.last_msg.port}
