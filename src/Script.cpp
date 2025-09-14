@@ -34,9 +34,14 @@ int l_send_file(lua_State* L) {
     return 0; // no values returned to Lua
 }
 
+int Script::_execute_bash(const std::string &cmd)
+{
+    std::cout << "[C++] Executing bash command: " << cmd << "\n";
+    return system(cmd.c_str());
+}
 
 
-Script::Script(const std::string& path)
+Script::Script(const std::string &path)
 {
     script_path = path;
 }
@@ -44,6 +49,7 @@ Script::Script(const std::string& path)
 Script::~Script()
 {
 }
+
 
 int Script::compose()
 {

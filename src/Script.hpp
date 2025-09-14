@@ -14,15 +14,17 @@ class Script
 private:
     lua_State* LuaState;
     std::string script_path;
-
     
+    int _execute_bash(const std::string& cmd);
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 public:
     Script(const std::string& path);
     ~Script();
 
     int compose();
     int action();
-    int result();
+
 };
 
 #endif

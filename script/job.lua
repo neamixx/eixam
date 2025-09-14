@@ -1,14 +1,12 @@
 function composing():
-    job.bash("echo composing")
-    job.bash("ls -l")
+    job.send("main.cpp")
 end
 
 function action()
-    job.bash("echo hello")
-    job.bash("ls -l")
+    job.bash("g++ main.cpp -o main")
+    job.send("main")
 end
 
 function result()
-    job.bash("echo result")
-    job.bash("ls -l")
+    job.bash("cat ./main")
 end
