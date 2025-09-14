@@ -12,7 +12,7 @@
 class Script
 {
 private:
-    lua_State* LuaState;
+    
     std::string script_path;
     
     int _execute_bash(const std::string& cmd);
@@ -22,7 +22,7 @@ public:
     Script(const std::string& path);
     ~Script();
 
-    int compose();
+    static int compose(std::string str);
     int action();
 
 };

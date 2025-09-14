@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(MyLuaProject LANGUAGES CXX)
+project(eixam LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -32,17 +32,17 @@ add_subdirectory("${THIRD_PARTY_DIR}/cpp-httplib" httplib_build)
 file(GLOB SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 # Executable
-add_executable(MyLuaProject ${SRC})
+add_executable(eixam ${SRC})
 
 # Includes del projecte i Lua
-target_include_directories(MyLuaProject PRIVATE
+target_include_directories(eixam PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
     ${LUA_INCLUDE_DIR}
     ${STATGRAB_INCLUDE_DIR}
 )
 
 # Enllaços (NO ASIO standalone, NO defines d'ASIO_STANDALONE)
-target_link_libraries(MyLuaProject PRIVATE
+target_link_libraries(eixam PRIVATE
     ${LUA_LIBRARIES}
     ${STATGRAB_LIB}
     Boost::system
@@ -53,7 +53,7 @@ target_link_libraries(MyLuaProject PRIVATE
 )
 
 #New executable for basch script passing program
-add_executable(bash_script eixam-bash/main.cpp)
-target_link_libraries(bash_script PRIVATE Boost::system)
+add_executable(eix eixam-bash/main.cpp)
+target_link_libraries(eix PRIVATE Boost::system)
 
 

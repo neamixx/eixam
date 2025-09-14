@@ -1,6 +1,7 @@
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <iostream>
 #include "Algorithm.hpp"
+#include "Script.hpp"
 
 using namespace boost::interprocess;
 
@@ -14,6 +15,10 @@ int wait_for_script() {
 
     mq.receive(buf, sizeof(buf), recv_size, priority);
     std::string script(buf, recv_size);
+
+    Script::compose()
+    
+
     std::cout << "Got script:\n" << script << "\n";
     return 0;
 }

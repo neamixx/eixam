@@ -26,8 +26,9 @@ private:
 public:
     Network(std::string name="node");
     ~Network();
-    std::vector<char> read_file(const std::string& path);
-    void send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path);
+    static std::vector<char> read_file(const std::string& path);
+    static void send_string(const std::string& ip_dest, const std::string& endpoint, const std::string& string);
+    static void send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& path);
     void listen();
     void stop();
     // Peer management and message handling

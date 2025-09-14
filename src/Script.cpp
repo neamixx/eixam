@@ -51,10 +51,10 @@ Script::~Script()
 }
 
 
-int Script::compose()
+int Script::compose(std::string script)
 {
 
-    LuaState = luaL_newstate();
+    lua_State* LuaState = luaL_newstate();
     luaL_openlibs(LuaState);
     
     lua_newtable(LuaState);
@@ -64,8 +64,7 @@ int Script::compose()
 
     lua_setglobal(LuaState, "job");
 
-    std::string full_path = SCRIPT_PATH + script_path;
-    if (luaL_dofile(LuaState, full_path.c_str()) != LUA_OK) {
+    if (luaL_loadstring(LuaState, script.c_str()) != LUA_OK) {
         std::cerr << "Error loading script: " << lua_tostring(LuaState, -1) << "\n";
         lua_pop(LuaState, 1);
         lua_close(LuaState);

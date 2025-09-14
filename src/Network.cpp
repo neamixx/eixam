@@ -80,15 +80,10 @@ void Network::listen()
     }
 }
 
-void Network::send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path)
+void Network::send_string(const std::string& ip_dest, const std::string& endpoint, const std::string& file)
 {
 
-    std::vector<char> file_data = read_file(file_path);
-    if (file_data.empty()) {
-        std::cerr << "Failed to read file: " << file_path << std::endl;
-        return;
-    }
-
+    std::string file_data = file;
     try {
         boost::asio::io_context io;
 
@@ -102,19 +97,62 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
         // Connect
         boost::asio::connect(socket, endpoints);
 
-        // Open file
-        std::ifstream file(file_path, std::ios::binary);
-        if (!file) {
-            std::cerr << "Could not open file: " << file_path << "\n";
-            throw std::runtime_error("File open error");
-        }
+        // Send file in chunks
+    constexpr std::size_t chunk_size = 4096;
+    char buffer[chunk_size];
+
+    std::size_t pos = 0;
+    while (pos < file_data.size()) {
+        std::size_t n = std::min(chunk_size, file_data.size() - pos);
+
+        // Copy substring into buffer
+        std::memcpy(buffer, file_data.data() + pos, n);
+
+        // Write this chunk
+        boost::asio::write(socket, boost::asio::buffer(buffer, n));
+
+        pos += n;
+    }
+
+        std::cout << "File sent successfully.\n";
+    }
+    catch (std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+    }
+}
+
+void Network::send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file)
+{
+    std::vector<char> file_data = read_file(file);
+    try {
+        boost::asio::io_context io;
+
+        // Resolve host/port
+        tcp::resolver resolver(io);
+        auto endpoints = resolver.resolve(ip_dest.c_str(), "4044");
+
+        // Create socket
+        tcp::socket socket(io);
+
+        // Connect
+        boost::asio::connect(socket, endpoints);
 
         // Send file in chunks
-        char buffer[4096];
-        while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
-            std::size_t n = file.gcount(); // bytes read
-            boost::asio::write(socket, boost::asio::buffer(buffer, n));
-        }
+    constexpr std::size_t chunk_size = 4096;
+    char buffer[chunk_size];
+
+    std::size_t pos = 0;
+    while (pos < file_data.size()) {
+        std::size_t n = std::min(chunk_size, file_data.size() - pos);
+
+        // Copy substring into buffer
+        std::memcpy(buffer, file_data.data() + pos, n);
+
+        // Write this chunk
+        boost::asio::write(socket, boost::asio::buffer(buffer, n));
+
+        pos += n;
+    }
 
         std::cout << "File sent successfully.\n";
     }
