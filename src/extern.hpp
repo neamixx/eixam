@@ -4,4 +4,7 @@
 #include "Resources.hpp"
 Resources resources;
 
+#include "Network.hpp"
+Network netword;    
+
 #endif // EXTERN_HPP

@@ -1,7 +1,7 @@
 #include "Resources.hpp"
 #include <statgrab.h>
-#include "Resources.hpp"
 #include <iostream>
+#include <unistd.h> //for gethostname
 
 Resources::Resources(/* args */)
 {
@@ -23,8 +23,6 @@ Resources::~Resources()
 
 int Resources::update()
 {
-
-
 
     size_t entries = 0;
     sg_mem_stats* mem = sg_get_mem_stats(&entries);
@@ -54,6 +52,14 @@ int Resources::update()
         std::cerr << "Failed to get CPU stats, error code: " << cpu_error << std::endl;
     }
 
-return 0;
+    // Host name
+    hostname = std::string("node");
+    /*
+    char hostname_c[50];
+    if (gethostname(hostname_c, sizeof(hostname_c)) == 0) {
+        hostname = std::string(hostname_c);
+    } else {
+        perror("gethostname");
+    }*/
+    return 0;
 }
-

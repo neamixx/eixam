@@ -12,9 +12,10 @@
 #include <statgrab.h>
 #include "Server.hpp"
 
-int main() {
+extern Network network;
 
-    Network net;
+int main() {
+    
     Server server;
     std::thread t1([&server]() { server.listen(); });
     t1.join();

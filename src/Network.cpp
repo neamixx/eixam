@@ -144,9 +144,12 @@ void Network::send_heartbeat() {
 
         struct Message msg;
         msg.cpu = resources.cpu_user;
+        msg.totalcpu = resources.cpu_system;
         msg.gpu = 0;
         msg.ram = resources.used_mem;
+        msg.totalram = resources.total_mem;
         msg.group_id = 0;
+        msg.hostname = resources.hostname;
         msg.port = 5005;
 
         udp::endpoint multicast_endpoint(boost::asio::ip::make_address(multicast_address), multicast_port);
@@ -164,7 +167,6 @@ void Network::send_heartbeat() {
 }
 
 void Network::check_alive(){
-    std::cout<<"ajudaaa"<<std::endl;
     const int TIMEOUT_MS = 5000; // 5 sec
     auto now = std::chrono::high_resolution_clock::now();
     int current_time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
@@ -205,7 +207,7 @@ void Network::listen_heartbeat(){
 }
 
 
-void Network::add_peer(const std::string& ip, int timestamp, struct Message msg){
+void Network::add_peer(const std::string& ip, int timestamp, struct Message& msg){
     if(_peers.find(ip) == _peers.end()){
         InfoPeer info;
         info.ttl = timestamp;
