@@ -110,17 +110,13 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
 }
 
 // Communication management functions
-
 void Network::heartbeat(){
-
     while (true)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         check_alive();
         send_heartbeat();
     }
-    
-
 }
 
 
@@ -184,9 +180,9 @@ void Network::listen_heartbeat(){
     socket.bind(listener_endpoint);
     socket.set_option(boost::asio::ip::multicast::join_group(
     boost::asio::ip::make_address("239.255.0.1").to_v4()));
-
+    Message msg;
+    
     while(true) {
-        struct Message msg;
         udp::endpoint sender_endpoint;
         size_t length = socket.receive_from(boost::asio::buffer(&msg, sizeof(msg)), sender_endpoint);
         struct InfoPeer info;
@@ -201,7 +197,7 @@ void Network::listen_heartbeat(){
 }
 
 
-void Network::add_peer(const std::string& ip, int timestamp, struct Message& msg){
+void Network::add_peer(const std::string& ip, int timestamp, struct Message msg){
     if(_peers.find(ip) == _peers.end()){
         InfoPeer info;
         info.ttl = timestamp;

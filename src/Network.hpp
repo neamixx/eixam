@@ -48,7 +48,7 @@ public:
     // Peer management and message handling
     void heartbeat();
     void check_alive();
-    void add_peer(const std::string& ip, int timestamp, struct Message& msg);
+    void add_peer(const std::string& ip, int timestamp, struct Message msg);
     void delete_peer(const std::string& ip);
     void listen_heartbeat();
     void send_heartbeat();
