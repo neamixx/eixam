@@ -25,6 +25,7 @@ target_include_directories(websocketpp INTERFACE
 
 add_subdirectory("${THIRD_PARTY_DIR}/json" json_build)
 
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
 add_subdirectory("${THIRD_PARTY_DIR}/cpp-httplib" httplib_build)
 
 # Fonts
