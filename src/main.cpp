@@ -12,13 +12,19 @@
 #include <statgrab.h>
 #include "Server.hpp"
 
+#include "IPC.hpp"
 
 int main(int argc, char* argv[]) {
+    
     std::string name;
     if (argc == 2) {
         name = argv[1];
+    } else {
+        name = "bili";
     }
 
+    std::thread ipc_thread( []() { wait_for_script(); } );
+    ipc_thread.detach();
 
     Network network(name);
     Server server;

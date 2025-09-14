@@ -10,8 +10,7 @@ struct Message{
     float totalram;
     float gpu;
     float ram;
-    float temp;
-    std::string hostname;
+    char hostname[20];
     int group_id;
     int port;
 };

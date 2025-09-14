@@ -51,3 +51,9 @@ target_link_libraries(MyLuaProject PRIVATE
     httplib::httplib
     nlohmann_json::nlohmann_json
 )
+
+#New executable for basch script passing program
+add_executable(bash_script eixam-bash/main.cpp)
+target_link_libraries(bash_script PRIVATE Boost::system)
+
+

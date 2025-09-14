@@ -6,38 +6,22 @@
 
 #include "Resources.hpp"
 
+#include <boost/asio.hpp>
+#include <iostream>
+#include <fstream>
+
+using boost::asio::ip::tcp;
+
 extern Resources resources;
-
-void Network::_handle_connect(websocketpp::connection_hdl hdl)
-{
-    websocketpp::server<websocketpp::config::asio>::connection_ptr con = _ws.get_con_from_hdl(hdl);
-    std::string client_ip = con->get_remote_endpoint();
-
-    std::cout << "Connection opened from IP: " << client_ip << std::endl;
-
-    std::string resource = con->get_resource();
-
-    std::cout << "Incoming request for resource: " << resource << std::endl;
-
-}
-
-void Network::_handle_disconnect(websocketpp::connection_hdl hdl)
-{
-    websocketpp::server<websocketpp::config::asio>::connection_ptr con = _ws.get_con_from_hdl(hdl);
-    std::string client_ip = con->get_remote_endpoint();
-
-    std::cout << "Connection closed from IP: " << client_ip << std::endl;
-}
 
 Network::Network(std::string name)
 {
     std::cout << "Network initialized, listening on port " << PORT << std::endl;
-    _ws.init_asio();
-    //weird lambda syntax to bind member functions as handlers
-    _ws.set_open_handler([this](websocketpp::connection_hdl hdl) { this->_handle_connect(hdl); });
-    _ws.set_close_handler([this](websocketpp::connection_hdl hdl) { this->_handle_disconnect(hdl); });
+    //std::thread listen_thread([this]() { this->listen(); });
     std::thread t1([this]() { this->listen_heartbeat(); });
     std::thread t2([this]() { this->heartbeat(); });
+    
+    //listen_thread.detach();
     t1.detach();
     t2.detach();
 
@@ -59,10 +43,41 @@ std::vector<char> Network::read_file(const std::string& path)
 
 void Network::listen()
 {
-    _ws.listen(PORT);
-    _ws.start_accept();
+    const char* port = "4044";
+    const char* out_filename = "received_file.lua";
 
-    _ws.run();
+    try {
+        boost::asio::io_context io;
+
+        tcp::acceptor acceptor(io, tcp::endpoint(tcp::v4(), std::stoi(port)));
+        tcp::socket socket(io);
+
+        std::cout << "Waiting for connection on port " << port << "...\n";
+        acceptor.accept(socket);
+
+        std::ofstream outfile(out_filename, std::ios::binary);
+        if (!outfile) {
+            std::cerr << "Could not open output file.\n";
+            throw std::runtime_error("File open error");
+        }
+
+        char buffer[4096];
+        boost::system::error_code ec;
+        std::size_t n;
+
+        while ((n = socket.read_some(boost::asio::buffer(buffer), ec)) > 0) {
+            outfile.write(buffer, n);
+        }
+
+        if (ec != boost::asio::error::eof) {
+            throw boost::system::system_error(ec);
+        }
+
+        std::cout << "File received and saved as " << out_filename << "\n";
+    }
+    catch (std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+    }
 }
 
 void Network::send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path)
@@ -74,43 +89,37 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
         return;
     }
 
-    try
-    {
-        websocketpp::client<websocketpp::config::asio_client> c;
-        c.init_asio();
+    try {
+        boost::asio::io_context io;
 
-        //log error channels
-        c.clear_access_channels(websocketpp::log::alevel::all);
-        c.clear_error_channels(websocketpp::log::elevel::all);
+        // Resolve host/port
+        tcp::resolver resolver(io);
+        auto endpoints = resolver.resolve(ip_dest.c_str(), "4044");
 
-        websocketpp::lib::error_code ec;
-        std::string uri = "ws://" + ip_dest + ":4044/" + endpoint;
+        // Create socket
+        tcp::socket socket(io);
 
-        auto con = c.get_connection(uri, ec);
-        if (ec) {
-            std::cerr << "Connection error: " << ec.message() << "\n";
-            throw std::runtime_error("Failed to create WebSocket connection");
+        // Connect
+        boost::asio::connect(socket, endpoints);
+
+        // Open file
+        std::ifstream file(file_path, std::ios::binary);
+        if (!file) {
+            std::cerr << "Could not open file: " << file_path << "\n";
+            throw std::runtime_error("File open error");
         }
 
-        c.connect(con);
-
-        std::thread asio_thread([&c]() { c.run(); });
-
-        while (con->get_state() != websocketpp::session::state::open) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        // Send file in chunks
+        char buffer[4096];
+        while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
+            std::size_t n = file.gcount(); // bytes read
+            boost::asio::write(socket, boost::asio::buffer(buffer, n));
         }
 
-        con->send(file_data.data(), file_data.size(), websocketpp::frame::opcode::binary);std::cout << "File sent: " << file_data.size() << " bytes\n";
-
-        // Close connection
-        con->close(websocketpp::close::status::normal, "done");
-
-        std::cout << "File sent: " << file_data.size() << " bytes\n";
-        
-        asio_thread.join();
-
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << "\n";
+        std::cout << "File sent successfully.\n";
+    }
+    catch (std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
     }
 }
 
@@ -143,14 +152,15 @@ void Network::send_heartbeat() {
         std::string multicast_address = "239.255.0.1"; // example multicast IP
         unsigned short multicast_port = 5005;
 
-        struct Message msg;
+        Message msg;
         msg.cpu = resources.cpu_user;
         msg.totalcpu = resources.cpu_system;
         msg.gpu = 0;
         msg.ram = resources.used_mem;
         msg.totalram = resources.total_mem;
         msg.group_id = 0;
-        msg.hostname = name;
+        strncpy(msg.hostname, name.c_str(), sizeof(msg.hostname) - 1);
+        msg.hostname[sizeof(msg.hostname) - 1] = '\0';
         msg.port = 5005;
 
         udp::endpoint multicast_endpoint(boost::asio::ip::make_address(multicast_address), multicast_port);
@@ -191,13 +201,16 @@ void Network::listen_heartbeat(){
     socket.bind(listener_endpoint);
     socket.set_option(boost::asio::ip::multicast::join_group(
     boost::asio::ip::make_address("239.255.0.1").to_v4()));
-    Message msg;
+    Message msg = {};
     
     while(true) {
         udp::endpoint sender_endpoint;
         size_t length = socket.receive_from(boost::asio::buffer(&msg, sizeof(msg)), sender_endpoint);
-        struct InfoPeer info;
-        info.last_msg = msg;
+        std::cout << "Received heartbeat from " << msg.hostname << std::endl;
+        
+
+        //InfoPeer info;
+        //  info.last_msg = msg;
         //std::cout << msg.cpu << " " << msg.gpu << " " << msg.ram << " " << msg.group_id << " " << msg.port << std::endl;
         auto now = std::chrono::high_resolution_clock::now();
         int timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();

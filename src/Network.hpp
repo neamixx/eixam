@@ -18,12 +18,11 @@ class Network
 {
 private:
 
-    std::unordered_map<std::string, websocketpp::connection_hdl> _peersWS;
     websocketpp::server<websocketpp::config::asio> _ws;
     void _handle_connect(websocketpp::connection_hdl hdl);
     void _handle_disconnect(websocketpp::connection_hdl hdl);
     std::string name;
-    
+
 public:
     Network(std::string name="node");
     ~Network();
