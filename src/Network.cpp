@@ -159,7 +159,7 @@ void Network::send_heartbeat() {
 }
 
 void Network::check_alive(){
-    const int TIMEOUT_MS = 60000; // 60 sec
+    const int TIMEOUT_MS = 5000; // 5 sec
     auto now = std::chrono::high_resolution_clock::now();
     int current_time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     for (auto it = _peers.begin(); it != _peers.end(); ) {
@@ -199,7 +199,7 @@ void Network::add_peer(const std::string& ip, int timestamp){
     //falta guardar missatge
     if(_peers.find(ip) == _peers.end()){
         _peers[ip] = timestamp;
-        std::cout << "Added new peer: " << ip << std::endl;
+        std::cout << "!!!Added new peer!!!: " << ip << std::endl;
     } else {
         _peers[ip] = timestamp; //update ttl
         std::cout << "Updated peer: " << ip << std::endl;
