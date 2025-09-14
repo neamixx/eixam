@@ -4,6 +4,7 @@
 #include <fstream>
 #include <thread>
 
+
 void Network::_handle_connect(websocketpp::connection_hdl hdl)
 {
     websocketpp::server<websocketpp::config::asio>::connection_ptr con = _ws.get_con_from_hdl(hdl);
@@ -159,11 +160,12 @@ void Network::send_heartbeat() {
 }
 
 void Network::check_alive(){
+    std::cout<<"ajudaaa"<<std::endl;
     const int TIMEOUT_MS = 5000; // 5 sec
     auto now = std::chrono::high_resolution_clock::now();
     int current_time = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     for (auto it = _peers.begin(); it != _peers.end(); ) {
-        if (current_time - it->second > TIMEOUT_MS) {
+        if (current_time - it->second.ttl > TIMEOUT_MS) {
             std::cout << "Peer " << it->first << " is no longer alive." << std::endl;
             it = _peers.erase(it);
         } else {
@@ -187,21 +189,28 @@ void Network::listen_heartbeat(){
         struct Message msg;
         udp::endpoint sender_endpoint;
         size_t length = socket.receive_from(boost::asio::buffer(&msg, sizeof(msg)), sender_endpoint);
+        struct InfoPeer info;
+        info.last_msg = msg;
         std::cout << msg.cpu << " " << msg.gpu << " " << msg.ram << " " << msg.group_id << " " << msg.port << std::endl;
         auto now = std::chrono::high_resolution_clock::now();
         int timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-        add_peer(sender_endpoint.address().to_string(), timestamp);
+        add_peer(sender_endpoint.address().to_string(), timestamp, msg);
+        std::cout<<"epp"<<std::endl;
+        
     }
 }
 
 
-void Network::add_peer(const std::string& ip, int timestamp){
-    //falta guardar missatge
+void Network::add_peer(const std::string& ip, int timestamp, struct Message& msg){
     if(_peers.find(ip) == _peers.end()){
-        _peers[ip] = timestamp;
+        InfoPeer info;
+        info.ttl = timestamp;
+        info.last_msg = msg;
+        _peers[ip] = info;
         std::cout << "!!!Added new peer!!!: " << ip << std::endl;
     } else {
-        _peers[ip] = timestamp; //update ttl
+        _peers[ip].ttl = timestamp; //update ttl
+        _peers[ip].last_msg = msg; //update last message
         std::cout << "Updated peer: " << ip << std::endl;
     }
 
