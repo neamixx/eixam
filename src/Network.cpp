@@ -119,8 +119,8 @@ void Network::heartbeat(){
     while (true)
     {
         resources.update();
-        std::cout<<"heartbeat thread started"<<std::endl;
-        std::cout<<"cpu: "<<resources.cpu_user<<std::endl;
+        //std::cout<<"heartbeat thread started"<<std::endl;
+        //std::cout<<"cpu: "<<resources.cpu_user<<std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         check_alive();
         send_heartbeat();
@@ -158,8 +158,8 @@ void Network::send_heartbeat() {
         socket.send_to(boost::asio::buffer(&msg, sizeof(msg)), multicast_endpoint);
 
         // Optional: print for debugging
-        std::cout << "Sent heartbeat to multicast group " 
-                  << multicast_address << ":" << multicast_port << std::endl;
+        //std::cout << "Sent heartbeat to multicast group " 
+          //        << multicast_address << ":" << multicast_port << std::endl;
 
     } catch (std::exception& e) {
         std::cerr << "Heartbeat send failed: " << e.what() << std::endl;
@@ -197,11 +197,11 @@ void Network::listen_heartbeat(){
         size_t length = socket.receive_from(boost::asio::buffer(&msg, sizeof(msg)), sender_endpoint);
         struct InfoPeer info;
         info.last_msg = msg;
-        std::cout << msg.cpu << " " << msg.gpu << " " << msg.ram << " " << msg.group_id << " " << msg.port << std::endl;
+        //std::cout << msg.cpu << " " << msg.gpu << " " << msg.ram << " " << msg.group_id << " " << msg.port << std::endl;
         auto now = std::chrono::high_resolution_clock::now();
         int timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
         add_peer(sender_endpoint.address().to_string(), timestamp, msg);
-        std::cout<<"epp"<<std::endl;
+        //std::cout<<"epp"<<std::endl;
         
     }
 }
@@ -213,11 +213,11 @@ void Network::add_peer(const std::string& ip, int timestamp, struct Message& msg
         info.ttl = timestamp;
         info.last_msg = msg;
         _peers[ip] = info;
-        std::cout << "!!!Added new peer!!!: " << ip << std::endl;
+        std::cout << "Added new peer: " << ip << std::endl;
     } else {
         _peers[ip].ttl = timestamp; //update ttl
         _peers[ip].last_msg = msg; //update last message
-        std::cout << "Updated peer: " << ip << std::endl;
+        //std::cout << "Updated peer: " << ip << std::endl;
     }
 
 }
