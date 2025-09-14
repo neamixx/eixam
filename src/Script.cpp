@@ -39,8 +39,6 @@ int l_send_file(lua_State* L) {
 Script::Script(const std::string& path)
 {
     script_path = path;
-    
-
 }
 
 Script::~Script()
