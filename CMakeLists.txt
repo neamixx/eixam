@@ -13,6 +13,10 @@ find_package(Lua REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Threads REQUIRED)
 
+
+find_path(STATGRAB_INCLUDE_DIR statgrab.h)
+find_library(STATGRAB_LIB statgrab)
+
 # WebSocket++ com a llibreria d'headers
 add_library(websocketpp INTERFACE)
 target_include_directories(websocketpp INTERFACE
@@ -29,11 +33,13 @@ add_executable(MyLuaProject ${SRC})
 target_include_directories(MyLuaProject PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
     ${LUA_INCLUDE_DIR}
+    ${STATGRAB_INCLUDE_DIR}
 )
 
 # Enllaços (NO ASIO standalone, NO defines d'ASIO_STANDALONE)
 target_link_libraries(MyLuaProject PRIVATE
     ${LUA_LIBRARIES}
+    ${STATGRAB_LIB}
     Boost::system
     Threads::Threads
     websocketpp

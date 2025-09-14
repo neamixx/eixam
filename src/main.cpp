@@ -6,14 +6,11 @@
 #include "Script.hpp"
 #include "Network.hpp"
 
+#include <statgrab.h>
+
 int main() {
-    //boost::asio::io_context io;
-    //PeerServer server(io, 12345);
-    //io.run();
 
-    //Script script("job.lua");
-    //script.run();
-
+    
     Network net;
     return 0;
 }
