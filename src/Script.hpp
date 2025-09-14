@@ -7,6 +7,8 @@
 #include <vector>
 #include <fstream>
 
+#include <boost/asio.hpp>
+
 class Script
 {
 private:

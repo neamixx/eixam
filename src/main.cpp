@@ -3,10 +3,11 @@
 #include <string>
 #include <vector>
 
-#include "Script.hpp"
+#include "Network.hpp"
 
 int main() {
-    Script script("job.lua");
-    script.run();
+    Network network;
+    network.listen();
+
     return 0;
 }
