@@ -61,13 +61,6 @@ void Network::listen()
 
 void Network::send_file(const std::string& ip_dest, const std::string& endpoint, const std::string& file_path)
 {
-<<<<<<< Updated upstream
-=======
-    if (_peersWS.find(ip_dest) == _peersWS.end()) {
-        std::cerr << "No connection found for IP: " << ip_dest << std::endl;
-        return;
-    }
->>>>>>> Stashed changes
 
     std::vector<char> file_data = read_file(file_path);
     if (file_data.empty()) {
@@ -75,19 +68,10 @@ void Network::send_file(const std::string& ip_dest, const std::string& endpoint,
         return;
     }
 
-<<<<<<< Updated upstream
     try
     {
         websocketpp::client<websocketpp::config::asio_client> c;
         c.init_asio();
-=======
-    websocketpp::connection_hdl hdl = _peersWS[ip_dest];
-    websocketpp::server<websocketpp::config::asio>::connection_ptr con = _ws.get_con_from_hdl(hdl);
-    if (!con) {
-        std::cerr << "Invalid connection handle for IP: " << ip_dest << std::endl;
-        return;
-    }
->>>>>>> Stashed changes
 
         //log error channels
         c.clear_access_channels(websocketpp::log::alevel::all);
