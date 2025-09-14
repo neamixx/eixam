@@ -9,25 +9,14 @@
 #include <nlohmann/json.hpp>
 #include "extern.hpp"
 
-void server() {
-    httplib::Server svr;
-    std::cout <<"hola"<< std::endl;
-        svr.Get("/hi", [](const httplib::Request&, httplib::Response& res) {
-        nlohmann::json j = {{"msg", "Hello World!"}};
-        res.set_content(j.dump(), "application/json");   // IMPORTANT: content-type
-    });
-
-    svr.listen("0.0.0.0", 8080);
-}
-
 #include <statgrab.h>
+#include "Server.hpp"
 
 int main() {
 
-
-    std::thread t(server);
     Network net;
-    std::thread t1(server);
+    Server server;
+    std::thread t1([&server]() { server.listen(); });
     t1.join();
     return 0;
 }
