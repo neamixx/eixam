@@ -11,14 +11,10 @@ void Network::_handle_connect(websocketpp::connection_hdl hdl)
 
     std::cout << "Connection opened from IP: " << client_ip << std::endl;
 
-<<<<<<< Updated upstream
     std::string resource = con->get_resource();
 
     std::cout << "Incoming request for resource: " << resource << std::endl;
 
-=======
-    _peersWS[client_ip] = hdl;
->>>>>>> Stashed changes
 }
 
 void Network::_handle_disconnect(websocketpp::connection_hdl hdl)
@@ -27,33 +23,18 @@ void Network::_handle_disconnect(websocketpp::connection_hdl hdl)
     std::string client_ip = con->get_remote_endpoint();
 
     std::cout << "Connection closed from IP: " << client_ip << std::endl;
-<<<<<<< Updated upstream
-=======
-
-    _peersWS.erase(client_ip);
->>>>>>> Stashed changes
 }
 
 Network::Network()
 {
     _ws.init_asio();
-<<<<<<< Updated upstream
-=======
-    
->>>>>>> Stashed changes
-
-
     //weird lambda syntax to bind member functions as handlers
     _ws.set_open_handler([this](websocketpp::connection_hdl hdl) { this->_handle_connect(hdl); });
     _ws.set_close_handler([this](websocketpp::connection_hdl hdl) { this->_handle_disconnect(hdl); });
-
-<<<<<<< Updated upstream
-=======
     std::thread t1([this]() { this->listen_heartbeat(); });
     std::thread t2([this]() { this->heartbeat(); });
     t1.join();
     t2.join();
->>>>>>> Stashed changes
 
 }
 
@@ -210,11 +191,13 @@ void Network::check_alive(){
 void Network::listen_heartbeat(){
     using boost::asio::ip::udp;
     boost::asio::io_context io_context;
-    udp::endpoint listener_endpoint(boost::asio::ip::make_address("239.255.0.1"), 5005);
+    udp::endpoint listener_endpoint(udp::v4(), 5005);
     udp::socket socket(io_context);
     socket.open(listener_endpoint.protocol());
     socket.set_option(boost::asio::socket_base::reuse_address(true));
     socket.bind(listener_endpoint);
+    socket.set_option(boost::asio::ip::multicast::join_group(
+    boost::asio::ip::make_address("239.255.0.1").to_v4()));
 
     while(true) {
         struct Message msg;
